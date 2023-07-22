@@ -1,0 +1,14 @@
+# Example Remote Config
+modules:
+  - path: 'kubejs' # Name of folder inside .minecraft folder
+    zip_url: 'https://raw.githubusercontent.com/TheKrafter/EUCLIDApp/main/example_files/kubejs.zip' # URL of zip. See SETUP.md
+    version: 1 # Version of module. Should increment on each update.
+    id: 'kubejs' # Unique ID for this module.
+  - path: 'mods' # Name of folder inside .minecraft folder
+    zip_url: 'https://raw.githubusercontent.com/TheKrafter/EUCLIDApp/main/example_files/mods.zip' # URL of zip. See SETUP.md
+    version: 1 # Version of module. Should increment on each update.
+    id: 'mods' # Unique ID for this module.
+  - path: 'config' # Name of folder inside .minecraft folder
+    zip_url: 'https://raw.githubusercontent.com/TheKrafter/EUCLIDApp/main/example_files/configs.zip' # URL of zip. See SETUP.md
+    version: 1 # Version of module. Should increment on each update.
+    id: 'config' # Unique ID for this module.
