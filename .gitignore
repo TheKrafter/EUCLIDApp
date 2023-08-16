@@ -4,6 +4,7 @@
 # Copyright (c) 2023 TheKrafter
 # SPDX-License-Identifier: MIT
 
+
 # Things you may want to
 # comment out:
 
@@ -12,6 +13,7 @@ texturepacks/
 shaderpacks/
 
 servers.dat
+
 
 # Directories not Synced:
 
@@ -23,6 +25,11 @@ server-resource-packs/
 saves/
 .fabric/
 
+# Subdirectories not Synced:
+
+mods/.index/
+
+
 # Root Files
 
 deaths.dat
@@ -33,3 +40,17 @@ options.txt
 rhino.local.properties
 servers.dat_old
 usercache.json
+
+
+# KubeJS
+
+## Logs
+
+kubejs/client.txt
+kubejs/server.txt
+kubejs/startup.txt
+
+## Dirs
+
+kubejs/.old/
+kubejs/exported/
