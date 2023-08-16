@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-#
+# SPDX-License-Identifier: BSD-3-Clause
+# 
 # EUCLID App
 # ----------
 # Designed to update EUCLID 
@@ -34,18 +35,22 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from logging42 import logger
 from typing import Optional
 import urllib.request
 import tempfile
 import zipfile
+import dulwich
 import tkinter
 import shutil
 import yaml
 import sys
 import os
 
-DEFAULT_UPDATE_URL = 'https://raw.githubusercontent.com/TheKrafter/EUCLIDApp/main/example_remote_config.yml'
-CONFIG_FILE_NAME = 'euclid.cfg'
+DEFAULT_GIT_URL = 'https://github.com/TheKrafter/EUCLIDApp.git'
+DEFAULT_GIT_BRANCH = 'source'
+DEFAULT_MINECRAFT_SUBDIRECTORY = '.euclidminecraft/'
+CONFIG_FILE_NAME = 'euclid-git.cfg'
 
 class NoMinecraftFolder(Exception):
     def __init__(self, *args, **kwargs):
@@ -54,21 +59,33 @@ class NoMinecraftFolder(Exception):
 def locate_config() -> str:
     """ Find the Path to the EUCLID config file """
     if sys.platform == 'linux' or sys.platform == 'linux2':
+        logger.debug('Detected Linux.')
         config_path = f'{os.environ("HOME")}/.config/euclid/'
+        data_dir = f'{os.environ("HOME")}/.local/var/euclid/'
     elif sys.platform == 'darwin':
+        logger.debug('Detected Darwin.')
         config_path = f'{os.environ("HOME")}/Library/Application Support/EUCLID/'
+        data_dir = config_path
     elif sys.platform == 'win32':
+        logger.debug('Detected Windows.')
         config_path = f'{os.getenv("APPDATA")}/EUCLID/'
+        data_dir = config_path
     else:
+        logger.critical(f'Platform "{sys.platform}" not supported!')
+        logger.info('Please contribute for your platform at https://github.com/TheKrafter/EUCLIDApp')
         raise NotImplementedError
     
     if not os.path.exists(config_path):
         os.mkdir(config_path)
+    if not os.path.exists(data_dir):
+        os.mkdir(data_dir)
     
     if not os.path.exists(config_path + CONFIG_FILE_NAME):
         config = {
-            'update_url': DEFAULT_UPDATE_URL,
-            'modules': {},
+            'git_url': DEFAULT_GIT_URL,
+            'git_branch': DEFAULT_GIT_BRANCH,
+            'mc_default_dir': data_dir + DEFAULT_MINECRAFT_SUBDIRECTORY,
+            'mc_current_dir': data_dir + DEFAULT_MINECRAFT_SUBDIRECTORY,
         }
         with open(config_path + CONFIG_FILE_NAME, 'w') as file:
             yaml.dump_all(config, file)
@@ -76,50 +93,5 @@ def locate_config() -> str:
     with open(config_path + CONFIG_FILE_NAME, 'r') as file:
         cfg = yaml.load_all(file)
     
+    logger.debug('Loaded config file successfully!')
     return cfg
-
-def get_remote_config(config: dict) -> dict:
-    """ Get the remote config from the server's update url as configured in the config.
-    Returns a dictionary of the loaded config """
-    path = tempfile.gettempdir() + 'euclid_remote_config.yml'
-
-    # Download and save remote config file
-    with urllib.request.urlopen(config['update_url']) as response, open(path, 'wb') as out_file: 
-        shutil.copyfileobj(response, out_file)
-    
-    with open(path, 'r') as file:
-        remote = yaml.load_all(file)
-    
-    return remote
-
-def check_for_updates(config: dict, remote_config: dict) -> dict:
-    """ Check if updates are available
-    Returns dict of module IDs containing None if no update is necessary, str url if update is needed. """
-    updates = {}
-    for module in remote_config['modules']:
-        if module['version'] > config['modules'][module['id']]:
-            updates[module['id']] = True
-        else:
-            updates[module['id']] = False
-    
-    return updates
-
-def update_modules(config: dict, remote_config: dict, updates: dict):
-    """ Update files based `updates`, the dict returned from check_for_updates. """
-    cache = tempfile.gettempdir() + '/euclid_module_cache/'
-    os.mkdir(cache)
-    for module in updates:
-        if updates['module'] != None:
-            # 1. Download File
-            path = f'{cache}/{module}.zip'
-            with urllib.request.urlopen(updates['module']) as response, open(path, 'wb') as out_file: 
-                shutil.copyfileobj(response, out_file)
-            # 2. Make dest. folder
-            if config['minecraft_folder'] == None:
-                raise NoMinecraftFolder()
-            else:
-                dest = config['minecraft_folder'] + '/' + module + '/'
-                os.mkdir(dest)
-            # 3. Unzip file into dest. folder
-            with zipfile.ZipFile(path, 'r') as zip_ref:
-                zip_ref.extractall(dest)
