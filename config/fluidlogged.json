@@ -1,0 +1,7 @@
+{
+  "compatibilityMode": false,
+  "fluids": [
+    "minecraft:lava"
+  ],
+  "printFluidIds": false
+}

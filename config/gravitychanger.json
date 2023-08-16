@@ -1,0 +1,8 @@
+{
+  "client": false,
+  "keepWorldLook": true,
+  "server": false,
+  "resetGravityOnDimensionChange": true,
+  "resetGravityOnRespawn": true,
+  "voidDamageAboveWorld": true
+}

@@ -1,0 +1,14 @@
+name = "Raised"
+filename = "raised-fabric-1.18.2-1.1.4.jar"
+side = "both"
+
+[download]
+mode = "url"
+url = "https://cdn.modrinth.com/data/nCQRBEiR/versions/GHkPHvaV/raised-fabric-1.18.2-1.1.4.jar"
+hash-format = "sha512"
+hash = "da086513a7b4f969841cf0b1c836a78ede304fb66c5c0fecbdaa80c894cf47cc89f90ad5f6bb182c2288592ea0829dddc8af8ff7121ffd6692153f27dbc0a5cd"
+
+[update]
+[update.modrinth]
+mod-id = "nCQRBEiR"
+version = "GHkPHvaV"

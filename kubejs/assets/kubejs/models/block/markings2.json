@@ -1,0 +1,53 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [128, 128],
+	"textures": {
+		"2": "block/markings"
+	},
+	"elements": [
+		{
+			"from": [-16, -16, 16],
+			"to": [32, 32, 32],
+			"faces": {
+				"north": {"uv": [0, 0, 4, 4], "texture": "#2"},
+				"east": {"uv": [0, 4, 1.33333, 8], "texture": "#2"},
+				"south": {"uv": [0, 0, 4, 4], "texture": "#2"},
+				"west": {"uv": [0, 4, 1.33333, 8], "texture": "#2"},
+				"up": {"uv": [4, 5.33333, 0, 4], "texture": "#2"},
+				"down": {"uv": [4, 4, 0, 5.33333], "texture": "#2"}
+			}
+		},
+		{
+			"from": [-16, -16, 0],
+			"to": [32, 32, 16],
+			"faces": {
+				"north": {"uv": [4, 0, 8, 4], "texture": "#2"},
+				"east": {"uv": [0, 4, 1.33333, 8], "texture": "#2"},
+				"south": {"uv": [4, 0, 8, 4], "texture": "#2"},
+				"west": {"uv": [0, 4, 1.33333, 8], "texture": "#2"},
+				"up": {"uv": [4, 5.33333, 0, 4], "texture": "#2"},
+				"down": {"uv": [4, 4, 0, 5.33333], "texture": "#2"}
+			}
+		},
+		{
+			"from": [-16, -16, -16],
+			"to": [32, 32, 0],
+			"faces": {
+				"north": {"uv": [8, 0, 12, 4], "texture": "#2"},
+				"east": {"uv": [0, 4, 1.33333, 8], "texture": "#2"},
+				"south": {"uv": [8, 0, 12, 4], "texture": "#2"},
+				"west": {"uv": [0, 4, 1.33333, 8], "texture": "#2"},
+				"up": {"uv": [4, 5.33333, 0, 4], "texture": "#2"},
+				"down": {"uv": [4, 4, 0, 5.33333], "texture": "#2"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "bone",
+			"origin": [0, 0, 0],
+			"color": 0,
+			"children": [0, 1, 2]
+		}
+	]
+}

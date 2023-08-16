@@ -1,0 +1,4 @@
+[23:32:02] [INFO ] Hello, World! (You will only see this line once in console, during startup)
+[23:32:02] [INFO ] Loaded script startup_scripts:script.js in 0.212 s
+[23:32:02] [INFO ] Loaded 1/1 KubeJS startup scripts in 1.155 s
+[23:32:02] [ERR  ] Error occurred while handling event 'fluid.registry': Wrapped java.lang.IllegalArgumentException: Unknown type 'ArrowFunction (1) => {...}' for object 'thick_fluid'! (startup_scripts:script.js#322)

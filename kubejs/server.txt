@@ -1,0 +1,14 @@
+[01:05:02] [INFO ] Hello, World! (You will see this line every time server resources reload)
+[01:05:02] [INFO ] Loaded script server_scripts:script.js in 0.002 s
+[01:05:02] [INFO ] Loaded 1/1 KubeJS server scripts in 0.021 s
+[01:05:02] [INFO ] Scripts loaded
+[01:05:02] [INFO ] Scanning recipes...
+[01:05:03] [INFO ] [items] Found 350 tags, added 1 objects, removed 0 objects
+[01:05:03] [INFO ] [items] Found 350 tags, added 2 objects, removed 0 objects
+[01:05:03] [INFO ] [blocks] Found 282 tags, added 3 objects, removed 0 objects
+[01:05:03] [INFO ] [blocks] Found 282 tags, added 6 objects, removed 0 objects
+[01:05:03] [INFO ] Found 3685 recipes and 0 failed recipes in 100.1 ms
+[01:05:03] [INFO ] Posted recipe events in 1.532 ms
+[01:05:03] [INFO ] Modified & removed recipes in 30.97 ms
+[01:05:03] [INFO ] Added recipes in 1.325 ms
+[01:05:03] [INFO ] Added 0 recipes, removed 0 recipes, modified 0 recipes, with 0 failed recipes and 0 fall-backed recipes
