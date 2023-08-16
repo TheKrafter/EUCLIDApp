@@ -84,6 +84,7 @@ def locate_config() -> str:
         config = {
             'git_url': DEFAULT_GIT_URL,
             'git_branch': DEFAULT_GIT_BRANCH,
+            'git_pass': None,
             'mc_default_dir': data_dir + DEFAULT_MINECRAFT_SUBDIRECTORY,
             'mc_current_dir': data_dir + DEFAULT_MINECRAFT_SUBDIRECTORY,
         }
