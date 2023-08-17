@@ -36,11 +36,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from logging42 import logger
+from dulwich import porcelain
 from typing import Optional
 import urllib.request
 import tempfile
 import zipfile
-import dulwich
 import tkinter
 import shutil
 import yaml
@@ -52,12 +52,10 @@ DEFAULT_GIT_BRANCH = 'source'
 DEFAULT_MINECRAFT_SUBDIRECTORY = '.euclidminecraft/'
 CONFIG_FILE_NAME = 'euclid-git.cfg'
 
-class NoMinecraftFolder(Exception):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+
 
 def locate_config() -> str:
-    """ Find the Path to the EUCLID config file """
+    """ Locate the EUCLID config file, creating it if it's not there. """
     if sys.platform == 'linux' or sys.platform == 'linux2':
         logger.debug('Detected Linux.')
         config_path = f'{os.environ("HOME")}/.config/euclid/'
@@ -84,15 +82,48 @@ def locate_config() -> str:
         config = {
             'git_url': DEFAULT_GIT_URL,
             'git_branch': DEFAULT_GIT_BRANCH,
-            'git_pass': None,
-            'mc_default_dir': data_dir + DEFAULT_MINECRAFT_SUBDIRECTORY,
-            'mc_current_dir': data_dir + DEFAULT_MINECRAFT_SUBDIRECTORY,
+            'mc_dir': data_dir + DEFAULT_MINECRAFT_SUBDIRECTORY,
         }
         with open(config_path + CONFIG_FILE_NAME, 'w') as file:
             yaml.dump_all(config, file)
+        logger.info('Created missing config file with default options!')
     
-    with open(config_path + CONFIG_FILE_NAME, 'r') as file:
-        cfg = yaml.load_all(file)
+    return config_path + CONFIG_FILE_NAME
+
+
+def load_config() -> dict:
+    """ Load the EUCLID config file into a dict """
+
+    with open(load_config(), 'r') as file:
+        config = yaml.load_all(file)
+
+    logger.debug('Loaded config file!')
+    return config
+
+
+def dump_config(config: dict) -> None:
+    """ Save the EUCLID config file to disk """
+
+    with open(load_config(), 'w') as file:
+        yaml.dump_all(config)
+
+    logger.debug('Saved config file!')
+
+    return None
+
+
+def initialize(clone: bool = True) -> None:
+    """ Run setup on minecraft directory """
+    logger.info('Running initial setup...')
+
+    config = load_config()
+
+    if clone:
+        repo = porcelain.clone(
+            config["git_url"],
+            config["mc_dir"],
+            branch = config["git_branch"]
+        )
+
     
-    logger.debug('Loaded config file successfully!')
-    return cfg
+
