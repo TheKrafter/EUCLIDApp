@@ -35,34 +35,48 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
+# Imports
 from logging42 import logger
+
+import minecraft_launcher_lib as launcher
 from dulwich import porcelain
 from typing import Optional
 import urllib.request
+import subprocess
 import tempfile
 import zipfile
-import tkinter
 import shutil
 import yaml
 import sys
 import os
 
+import kivy
+# NOTE: Other Kivy imports come later in main()
+
+# Constants
 DEFAULT_GIT_URL = 'https://github.com/TheKrafter/EUCLIDApp.git'
 DEFAULT_GIT_BRANCH = 'source'
-DEFAULT_MINECRAFT_SUBDIRECTORY = '.euclidminecraft/'
+DEFAULT_JVM_ARGS = ["-Xmx2G", "-Xms2G"]
+DEFAULT_MINECRAFT_SUBDIRECTORY = 'minecraft/'
+DEFAULT_MINECRAFT_DATASUBDIR = 'data/'
+DEFAULT_MINECRAFT_VERSION = '1.18.2'
+
 CONFIG_FILE_NAME = 'euclid-git.cfg'
 
+MICROSOFT_CLIENT_ID = "52250597-6a9a-4c7e-8d76-0d9145758823"
+MICROSOFT_SECRET = None
 
 
 def locate_config() -> str:
     """ Locate the EUCLID config file, creating it if it's not there. """
     if sys.platform == 'linux' or sys.platform == 'linux2':
         logger.debug('Detected Linux.')
-        config_path = f'{os.environ("HOME")}/.config/euclid/'
-        data_dir = f'{os.environ("HOME")}/.local/var/euclid/'
+        config_path = f'{os.getenv("HOME")}/.config/euclid/'
+        data_dir = f'{os.getenv("HOME")}/.local/var/euclid/'
     elif sys.platform == 'darwin':
         logger.debug('Detected Darwin.')
-        config_path = f'{os.environ("HOME")}/Library/Application Support/EUCLID/'
+        config_path = f'{os.getenv("HOME")}/Library/Application Support/EUCLID/'
         data_dir = config_path
     elif sys.platform == 'win32':
         logger.debug('Detected Windows.')
@@ -83,9 +97,22 @@ def locate_config() -> str:
             'git_url': DEFAULT_GIT_URL,
             'git_branch': DEFAULT_GIT_BRANCH,
             'mc_dir': data_dir + DEFAULT_MINECRAFT_SUBDIRECTORY,
+            'mc_data': data_dir + DEFAULT_MINECRAFT_DATASUBDIR,
+            'mc_ver': DEFAULT_MINECRAFT_VERSION,
+            'jvm_args': DEFAULT_JVM_ARGS,
+            'ms_user': None,
+            'ms_token': None,
+            'ms_refresh': None,
+            'installed': False
         }
+
+        if not os.path.exists(config["mc_dir"]):
+            os.mkdir(config["mc_dir"])
+        if not os.path.exists(config["mc_data"]):
+            os.mkdir(config["mc_data"])
+
         with open(config_path + CONFIG_FILE_NAME, 'w') as file:
-            yaml.dump_all(config, file)
+            yaml.dump(config, file)
         logger.info('Created missing config file with default options!')
     
     return config_path + CONFIG_FILE_NAME
@@ -94,8 +121,9 @@ def locate_config() -> str:
 def load_config() -> dict:
     """ Load the EUCLID config file into a dict """
 
-    with open(load_config(), 'r') as file:
-        config = yaml.load_all(file)
+    with open(locate_config(), 'r') as file:
+        config = yaml.full_load(file)
+
 
     logger.debug('Loaded config file!')
     return config
@@ -104,26 +132,147 @@ def load_config() -> dict:
 def dump_config(config: dict) -> None:
     """ Save the EUCLID config file to disk """
 
-    with open(load_config(), 'w') as file:
-        yaml.dump_all(config)
+    with open(locate_config(), 'w') as file:
+        yaml.dump(config)
 
     logger.debug('Saved config file!')
 
     return None
 
 
-def initialize(clone: bool = True) -> None:
-    """ Run setup on minecraft directory """
+def initialize(config: dict) -> bool:
+    """ Run setup on minecraft directory and install minecraft and fabric
+    Returns True if successful, False if already installed. """
     logger.info('Running initial setup...')
 
-    config = load_config()
-
-    if clone:
+    logger.info('Cloning Repo...')
+    try:
         repo = porcelain.clone(
             config["git_url"],
             config["mc_dir"],
             branch = config["git_branch"]
         )
+    except FileExistsError:
+        logger.warning('Already cloned from git!')
+        
+
+    logger.info('Installing Minecraft...')
+    launcher.install.install_minecraft_version(config["mc_ver"], config["mc_dir"])
+
+    logger.info('Installing Fabric...')
+    launcher.fabric.install_fabric(config["mc_ver"], config["mc_dir"])
+
+    config['installed'] = True
+    dump_config(config)
+
+    logger.info('Installed!')
+
+    return None
+
+def login(config: dict) -> bool:
+    """ Placeholder """
+    return True
+
+def run(config: dict) -> None:
+    """ Run Minecraft. """
+
+    login = launcher.utils.generate_test_options() # TODO: LOGIN
+    login["jvmArguments"] = config["jvm_args"]
+    login["gameDirectory"] = config["mc_data"]
+
+    command = launcher.command.get_minecraft_command(config["mc_ver"], config["mc_dir"], login)
+
+    logger.info('Starting Minecraft...')
+    subprocess.run(command)
+
+    logger.info('Started Minecraft.')
+    return None
+
+def main(args: list) -> None:
+    """ The Application itself. """
+    from kivy.app import App
+    from kivy.uix.label import Label
+    from kivy.uix.button import Button
+    from kivy.uix.gridlayout import GridLayout
+    from kivy.properties import StringProperty
+    
+    
+    logger.info('Starting Application...')
+
+    class EUCLIDApp(App):
+
+        def build(self) -> GridLayout:
+            self.window = GridLayout()
+            self.window.cols = 1
+
+            self.label = Label(text="E. U. C. L. I. D.")
+            self.window.add_widget(
+                self.label
+            )
+
+            self.status = Label(text="...")
+            self.window.add_widget(
+                self.status
+            )
+
+            self.button = Button(text="INSTALL")
+            self.button.bind(
+                on_press = self._callback_install
+            )
+            self.window.add_widget(
+                self.button
+            )
+
+            self.launch = Button(text="LAUNCH")
+            self.launch.bind(
+                on_press = self._callback_run
+            )
+            self.window.add_widget(
+                self.launch
+            )
+
+
+            return self.window
+        
+        def _callback_install(self, instance) -> None:
+            self.status.text = "Finding config..."
+            self.button.set_disabled(True)
+
+            config = load_config()
+
+            self.status.text = "Installing..."
+
+            #initialize(config)
+
+            self.status.text = "Installed."
+
+            self.status.text = '...'
+
+            self.button.set_disabled(False)
+            return None
+        
+        def _callback_run(self, instance) -> None:
+            self.status.text = "Launching..."
+
+            try:
+                config = load_config()
+            except:
+                self.status.text = "Failed.\nPlease click Install First."
+            
+            if config["installed"]:
+                self.status.text = 'Running'
+                run(config)
+            else:
+                self.status.text = 'Not Installed.\nClick "INSTALL" first.'
+
+
+            return None
 
     
+    EUCLIDApp().run()
+    
+    logger.info('Exit.')
+    return None
 
+if __name__ == "__main__":
+    main(sys.argv)
