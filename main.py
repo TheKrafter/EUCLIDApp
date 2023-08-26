@@ -67,6 +67,10 @@ CONFIG_FILE_NAME = 'euclid-git.cfg'
 MICROSOFT_CLIENT_ID = "52250597-6a9a-4c7e-8d76-0d9145758823"
 MICROSOFT_SECRET = None
 
+# If this should also have
+# buttons and stuff to launch minecraft
+APP_IS_LAUNCHER = False
+
 
 def locate_config() -> str:
     """ Locate the EUCLID config file, creating it if it's not there. """
@@ -215,7 +219,7 @@ def main(args: list) -> None:
                 self.status
             )
 
-            self.button = Button(text="INSTALL")
+            self.button = Button(text="UPDATE")
             self.button.bind(
                 on_press = self._callback_install
             )
@@ -223,13 +227,16 @@ def main(args: list) -> None:
                 self.button
             )
 
-            self.launch = Button(text="LAUNCH")
-            self.launch.bind(
-                on_press = self._callback_run
-            )
-            self.window.add_widget(
-                self.launch
-            )
+            global APP_IS_LAUNCHER
+
+            if APP_IS_LAUNCHER:
+                self.launch = Button(text="LAUNCH")
+                self.launch.bind(
+                    on_press = self._callback_run
+                )
+                self.window.add_widget(
+                    self.launch
+                )
 
 
             return self.window
