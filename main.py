@@ -55,21 +55,21 @@ import kivy
 # NOTE: Other Kivy imports come later in main()
 
 # Constants
-DEFAULT_GIT_URL = 'https://github.com/TheKrafter/EUCLIDApp.git'
-DEFAULT_GIT_BRANCH = 'source'
+DEFAULT_GIT_URL = 'https://github.com/TheKrafter/EUCLIDSource.git'
+DEFAULT_GIT_BRANCH = 'main'
 DEFAULT_JVM_ARGS = ["-Xmx2G", "-Xms2G"]
 DEFAULT_MINECRAFT_SUBDIRECTORY = 'minecraft/'
 DEFAULT_MINECRAFT_DATASUBDIR = 'data/'
 DEFAULT_MINECRAFT_VERSION = '1.18.2'
 
-CONFIG_FILE_NAME = 'euclid-git2.yml'
+CONFIG_FILE_NAME = 'euclid-git3.yml'
 
 MICROSOFT_CLIENT_ID = "52250597-6a9a-4c7e-8d76-0d9145758823"
 MICROSOFT_SECRET = None
 
 # If this should also have
 # buttons and stuff to launch minecraft
-APP_IS_LAUNCHER = True
+APP_IS_LAUNCHER = False
 
 
 def locate_config() -> str:
@@ -87,9 +87,10 @@ def locate_config() -> str:
         config_path = f'{os.getenv("APPDATA")}/EUCLID/'
         data_dir = config_path
     else:
-        logger.critical(f'Platform "{sys.platform}" not supported!')
+        logger.warn(f'Platform "{sys.platform}" not supported!')
         logger.info('Please contribute for your platform at https://github.com/TheKrafter/EUCLIDApp')
         raise NotImplementedError
+        sys.exit(1)
     
     if not os.path.exists(config_path):
         os.mkdir(config_path)
