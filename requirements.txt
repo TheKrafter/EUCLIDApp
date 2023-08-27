@@ -1,2 +1,5 @@
-Everything-Tkinter
+kivy[base]
 pyyaml
+dulwich
+logging42
+minecraft-launcher-lib
