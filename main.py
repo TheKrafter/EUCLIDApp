@@ -37,7 +37,7 @@
 
 
 # Imports
-from logging42 import logger
+from kivy.logger import Logger as logger
 
 import minecraft_launcher_lib as launcher
 from dulwich import porcelain
@@ -62,7 +62,7 @@ DEFAULT_MINECRAFT_SUBDIRECTORY = 'minecraft/'
 DEFAULT_MINECRAFT_DATASUBDIR = 'data/'
 DEFAULT_MINECRAFT_VERSION = '1.18.2'
 
-CONFIG_FILE_NAME = 'euclid-git.cfg'
+CONFIG_FILE_NAME = 'euclid-git2.yml'
 
 MICROSOFT_CLIENT_ID = "52250597-6a9a-4c7e-8d76-0d9145758823"
 MICROSOFT_SECRET = None
@@ -125,23 +125,44 @@ def locate_config() -> str:
 def load_config() -> dict:
     """ Load the EUCLID config file into a dict """
 
-    with open(locate_config(), 'r') as file:
-        config = yaml.full_load(file)
+    path = locate_config()
+    with open(path, 'r') as file:
+        config = yaml.load(file, Loader=yaml.FullLoader)
 
+    if config == None:
+        os.remove(path)
+        with open(locate_config(), 'r') as file:
+            config = yaml.load(file, Loader=yaml.FullLoader)
 
-    logger.debug('Loaded config file!')
+    logger.info(f'Loaded config file: {config}')
+
     return config
 
 
 def dump_config(config: dict) -> None:
-    """ Save the EUCLID config file to disk """
+    """ Save the EUCLID config file to disk
+    DISABLED: PROBLEMATIC """
 
     with open(locate_config(), 'w') as file:
-        yaml.dump(config)
+        yaml.dump(config, file)
 
     logger.debug('Saved config file!')
 
     return None
+
+def unsync(config: dict, interactive: bool = True) -> Optional[bool]:
+    """ Remove synced data """
+    if interactive:
+        i = input(f'>> ARE YOU SURE YOU WANT TO REMOVE THE CONTENTS OF\n>> \'{config["mc_dir"]}\' ?\n>> [y/N]')
+        if i.lower().strip() == 'y':
+            return None
+    
+    logger.warning('REMOVING SYNCED DATA!')
+    shutil.rmtree(config["mc_dir"])
+
+    logger.warning('Removed Synced Data!')
+    config['installed'] = False
+    dump_config(config)
 
 
 def initialize(config: dict) -> bool:
@@ -158,6 +179,14 @@ def initialize(config: dict) -> bool:
         )
     except FileExistsError:
         logger.warning('Already cloned from git!')
+        logger.info('Pulling...')
+        #repo = porcelain.init(
+        #    config["mc_dir"]
+        #)
+        porcelain.pull(
+            config["mc_dir"],
+            #config["git_url"]
+        )
         
 
     logger.info('Installing Minecraft...')
@@ -209,17 +238,20 @@ def main(args: list) -> None:
             self.window = GridLayout()
             self.window.cols = 1
 
-            self.label = Label(text="E. U. C. L. I. D.")
+            title = "E. U. C. L. I. D.\nBSD-3-Clause License\nBy Krafter"
+            self.label = Label(text=title)
             self.window.add_widget(
                 self.label
             )
 
-            self.status = Label(text="...")
-            self.window.add_widget(
-                self.status
-            )
-
-            self.button = Button(text="UPDATE")
+            config = load_config()
+            if config == None:
+                label = "INSTALL"
+            elif config['installed']:
+                label = "UPDATE"
+            else:
+                label = "INSTALL"
+            self.button = Button(text=label)
             self.button.bind(
                 on_press = self._callback_install
             )
@@ -238,8 +270,22 @@ def main(args: list) -> None:
                     self.launch
                 )
 
+            self.status = Label(text="...")
+            self.window.add_widget(
+                self.status
+            )
 
             return self.window
+
+        def _change_status(self, status: str) -> None:
+            self.window.remove_widget(self.status)
+            self.status = Label(text=status)
+            self.window.add_widget(
+                self.status
+            )
+            logger.debug(f'Changed status to: {status}')
+
+            return None
         
         def _callback_install(self, instance) -> None:
             self.status.text = "Finding config..."
@@ -247,11 +293,11 @@ def main(args: list) -> None:
 
             config = load_config()
 
-            self.status.text = "Installing..."
+            self._change_status("Installing...")
 
-            #initialize(config)
+            initialize(config)
 
-            self.status.text = "Installed."
+            self._change_status("Installed.")
 
             self.status.text = '...'
 
@@ -259,7 +305,7 @@ def main(args: list) -> None:
             return None
         
         def _callback_run(self, instance) -> None:
-            self.status.text = "Launching..."
+            self._change_status("Launching...")
 
             try:
                 config = load_config()
@@ -267,10 +313,10 @@ def main(args: list) -> None:
                 self.status.text = "Failed.\nPlease click Install First."
             
             if config["installed"]:
-                self.status.text = 'Running'
+                self._change_status('Running')
                 run(config)
             else:
-                self.status.text = 'Not Installed.\nClick "INSTALL" first.'
+                self._change_status('Not Installed.\nClick "INSTALL" first.')
 
 
             return None
