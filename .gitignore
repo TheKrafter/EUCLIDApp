@@ -29,6 +29,12 @@ saves/
 
 mods/.index/
 
+# Minecraft Files
+
+assets/
+libraries/
+runtime/
+versions/
 
 # Root Files
 
