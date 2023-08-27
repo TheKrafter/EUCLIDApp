@@ -72,7 +72,10 @@ MICROSOFT_SECRET = None
 
 # If this should also have
 # buttons and stuff to launch minecraft
-APP_IS_LAUNCHER = False
+if 'launcher' in sys.argv:
+    APP_IS_LAUNCHER = True
+else:
+    APP_IS_LAUNCHER = False
 
 
 def locate_config() -> str:
