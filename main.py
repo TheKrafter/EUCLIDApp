@@ -218,7 +218,7 @@ def run(config: dict) -> None:
     logger.info('Starting Minecraft...')
     subprocess.run(command)
 
-    logger.info('Started Minecraft.')
+    logger.info('Stopped Minecraft.')
     return None
 
 def main(args: list) -> None:
@@ -299,8 +299,6 @@ def main(args: list) -> None:
 
             self._change_status("Installed.")
 
-            self.status.text = '...'
-
             self.button.set_disabled(False)
             return None
         
@@ -317,6 +315,8 @@ def main(args: list) -> None:
                 run(config)
             else:
                 self._change_status('Not Installed.\nClick "INSTALL" first.')
+            
+            self._change_status("...")
 
 
             return None
