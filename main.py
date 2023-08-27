@@ -69,7 +69,7 @@ MICROSOFT_SECRET = None
 
 # If this should also have
 # buttons and stuff to launch minecraft
-APP_IS_LAUNCHER = False
+APP_IS_LAUNCHER = True
 
 
 def locate_config() -> str:
@@ -311,7 +311,7 @@ def main(args: list) -> None:
                 self.status.text = "Failed.\nPlease click Install First."
             
             if config["installed"]:
-                self._change_status('Running')
+                self.window.quit
                 run(config)
             else:
                 self._change_status('Not Installed.\nClick "INSTALL" first.')
