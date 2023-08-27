@@ -37,11 +37,14 @@
 
 
 # Imports
+# Yes ik arranging them by length is dumb
+#  but so is this project so...
 from kivy.logger import Logger as logger
 
 import minecraft_launcher_lib as launcher
 from dulwich import porcelain
 from typing import Optional
+import multiprocessing
 import urllib.request
 import subprocess
 import tempfile
@@ -212,7 +215,7 @@ def run(config: dict) -> None:
 
     login = launcher.utils.generate_test_options() # TODO: LOGIN
     login["jvmArguments"] = config["jvm_args"]
-    login["gameDirectory"] = config["mc_data"]
+    #login["gameDirectory"] = config["mc_data"]
 
     command = launcher.command.get_minecraft_command(config["mc_ver"], config["mc_dir"], login)
 
@@ -228,7 +231,7 @@ def main(args: list) -> None:
     from kivy.uix.label import Label
     from kivy.uix.button import Button
     from kivy.uix.gridlayout import GridLayout
-    from kivy.properties import StringProperty
+    from kivy.properties import StringProperty, AliasProperty
     
     
     logger.info('Starting Application...')
@@ -271,32 +274,32 @@ def main(args: list) -> None:
                     self.launch
                 )
 
-            self.status = Label(text="...")
-            self.window.add_widget(
-                self.status
-            )
+            #self.status = Label(text="...")
+            #self.window.add_widget(
+            #    self.status
+            #)
 
             return self.window
 
         def _change_status(self, status: str) -> None:
-            self.window.remove_widget(self.status)
-            self.status = Label(text=status)
-            self.window.add_widget(
-                self.status
-            )
-            logger.debug(f'Changed status to: {status}')
+            #self.window.remove_widget(self.status)
+            #self.status = Label(text=status)
+            #self.window.add_widget(
+            #    self.status
+            #)
+            #logger.debug(f'Changed status to: {status}')
 
             return None
         
         def _callback_install(self, instance) -> None:
-            self.status.text = "Finding config..."
             self.button.set_disabled(True)
 
             config = load_config()
 
             self._change_status("Installing...")
 
-            initialize(config)
+            init = multiprocessing.Process(target=initialize, args=(config, ))
+            init.start()
 
             self._change_status("Installed.")
 
@@ -309,11 +312,15 @@ def main(args: list) -> None:
             try:
                 config = load_config()
             except:
-                self.status.text = "Failed.\nPlease click Install First."
+                self._change_status("Failed.\nPlease click Install First.")
             
             if config["installed"]:
-                self.window.quit
-                run(config)
+                self.launch.set_disabled(True)
+                init = multiprocessing.Process(target=run, args=(config, ))
+                init.start()
+
+                init.join()
+                self.launch.set_disabled(False)
             else:
                 self._change_status('Not Installed.\nClick "INSTALL" first.')
             
